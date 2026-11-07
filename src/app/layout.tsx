@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
-import { Fraunces, Geist } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 
-const sans = Geist({
-  subsets: ["latin"],
+const sans = localFont({
+  src: "./fonts/geist-latin.woff2",
+  weight: "100 900",
+  display: "swap",
   variable: "--font-geist",
+  adjustFontFallback: "Arial",
 });
 
-const display = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "700"],
+const display = localFont({
+  src: [
+    { path: "./fonts/fraunces-latin.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/fraunces-latin.woff2", weight: "700", style: "normal" },
+  ],
+  display: "swap",
   variable: "--font-fraunces",
+  adjustFontFallback: "Times New Roman",
 });
 
 export const metadata: Metadata = {
