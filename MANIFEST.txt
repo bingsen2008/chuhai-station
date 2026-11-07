@@ -1,0 +1,65 @@
+OK files:
+OK .gitignore bytes=480 sha=5ef6a520780202a1d6addd833d800ccb1ecac0bb
+OK eslint.config.mjs bytes=524 sha=719cea2b59f3222f4830a756100e1f756b8a18af
+OK src/lib/schema.ts bytes=7737 sha=fdd0d4a958aa604776673fb5690859a5b86d0f2d
+OK src/components/ui/button.tsx bytes=3230 sha=997e0c70faa7661e825b80f1f4a96b7ddeefc2d5
+OK src/components/station/station-app.test.tsx bytes=4688 sha=dab2ffd2cc23c115711f8f06b186e0507ed569f8
+OK postcss.config.mjs bytes=81 sha=c7bcb4b1ee14cd5e25078c2c934529afdd2a7df9
+OK src/lib/text.ts bytes=1859 sha=b150fe6bda68e7a167a00c00480c5a1477226af5
+OK src/components/ui/separator.tsx bytes=535 sha=d69c13426761105ab42e5a6bd364dc54bd70f78c
+OK src/lib/defaults.ts bytes=2099 sha=a9ee5ee8d089d2e8900b641c6a2117727c2190c9
+OK docs/screenshots/mobile-strategy.png bytes=262144 sha=4454e963d97943f8403fc7e8d043b08fb352828f TRUNCATED
+OK src/app/layout.tsx bytes=745 sha=4ab3633d7e3e0c8ae097c2b306a512f9db7e99b6
+OK src/components/station/panels.tsx bytes=12300 sha=8b86d887d7ef10956c790dbff33c1a9b4b6a1e42
+OK README.md bytes=2846 sha=f4fc14ff15403c450b828b1f638721ceb7b4b3d0
+OK src/components/station/fields.tsx bytes=4327 sha=3404db57ddf284a3a8aae6dad4d0b437e19c8c0f
+OK src/components/ui/sonner.tsx bytes=1119 sha=994436c3c031434c2b75a32d762756f6182b5186
+OK src/components/ui/badge.tsx bytes=1915 sha=6bc28c30ee309a4a5d53fe3e10e7394dd2034d1d
+OK src/components/station/tower.tsx bytes=12306 sha=5a9b4ec66f765790d5b812dc523f2958e0bc5d6c
+OK src/components/station/draft-context.tsx bytes=4182 sha=4174d1318681c7c2133970ff306c7bcef24f1090
+OK src/lib/types.ts bytes=4785 sha=3435f5afcd9d789a9bb4f34e98d7bafbbb8c004a
+OK src/components/ui/dialog.tsx bytes=4067 sha=c4fb8a2d344a5e7ac197d973bdef2b69b7bcb4a3
+OK src/lib/catalog.ts bytes=17422 sha=3b1f37add558b9eb37049044fef6937de53d4130
+OK docs/screenshots/desktop.png bytes=262144 sha=8c4e5d8cf6ac690d5c7ed3ae122bf15cf2da4815 TRUNCATED
+OK src/app/favicon.ico bytes=25931 sha=718d6fea4835ec2d246af9800eddb7ffb276240c
+OK public/.nojekyll bytes=0 sha=e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+OK src/components/ui/select.tsx bytes=6645 sha=ca1ee68da113d55b7e3f0f47efe50e1ae2943312
+OK src/lib/geometry.ts bytes=2894 sha=350a6299dc590ed7482fefb2d504626ade9de57c
+OK vitest.config.ts bytes=357 sha=0b11c32162a0165a488404333fb40e89da572cfb
+OK src/components/ui/textarea.tsx bytes=832 sha=5141de794cdc57aa317c8beba328a7284475d767
+OK src/lib/reducer.ts bytes=18638 sha=7c8527fa168841cd89d33a14b79f72bcdc648833
+OK docs/screenshots/desktop-strategy.png bytes=262144 sha=23e23b4ef7202aa51f2ce177c05c4223be9bd9ac TRUNCATED
+OK docs/screenshots/mobile.png bytes=262144 sha=c61dafea5b406a5a5c23a190a6363583f03de15f TRUNCATED
+OK tsconfig.json bytes=602 sha=c1334095f876a408c10f2357faaced969ec090ab
+OK src/components/station/station-app.tsx bytes=21921 sha=47202a67fb0ae2835bdb2ba80f907e9a1f624e9e
+OK src/components/ui/switch.tsx bytes=1801 sha=cf814744eab468c7002b3d3c0e8b46a1f95e9a70
+OK src/components/ui/label.tsx bytes=508 sha=ddfd2e16915f7435c3a7654add2e0f49d98612aa
+OK .github/workflows/pages.yml bytes=1041 sha=99b0b018767bc45f4b6775114bd5dd60ff7b32cc
+OK src/test/setup.ts bytes=391 sha=1dd6df34b05e7f54ea9dafa30d1806db6ba28187
+OK src/components/ui/tabs.tsx bytes=3487 sha=74e476616c9ca0b7fdbfaf076e45cdfd9300ab86
+OK src/components/ui/scroll-area.tsx bytes=1614 sha=b346b625cf4193b2e6f1f73a42ef86fe530fe9c8
+OK src/lib/handoff.ts bytes=5783 sha=6724dbc8c9e2bef0e4a8895365e63a150a4fa08b
+OK src/app/icon.svg bytes=323 sha=b591f578f0b737f77e254b65ba8fe4013ddd13a0
+OK components.json bytes=520 sha=8d886db5756307e013bc8ae97c05220fb7b6ab7a
+OK src/lib/model.test.ts bytes=7376 sha=4434496b76ae29b64a202e19f7c9d2cc39b5c646
+OK src/lib/storage.ts bytes=987 sha=a1b4aeca0fc9351e5297444b8da298dc27f20e22
+OK next.config.ts bytes=391 sha=ce147e4810c6905b3f49eed7daa33658b57ac5a9
+OK src/components/ui/card.tsx bytes=2620 sha=cf02f4845b73e9895881a1a2e1b00a52bc576cd4
+OK src/lib/roster.ts bytes=2216 sha=9cb0e378b93ba7f71ae37ce79383e10e43654506
+OK src/app/globals.css bytes=4815 sha=500e2cd670aeecc48733a63774924e2ac870326f
+OK src/lib/adapter.ts bytes=1042 sha=5027ad4674000847f4495bc4623c75f632260d08
+OK src/lib/utils.ts bytes=24 sha=f815ded4d7865413255682a8b1f8f95beb620d0a
+OK src/components/ui/tooltip.tsx bytes=2836 sha=3f9a713437ae4dd74a3855bdc1fac81978efadf5
+OK src/components/station/editors.tsx bytes=32086 sha=7706f06c5c621b2f9cdb0d10d554189441ce6f8e
+OK src/app/page.tsx bytes=124 sha=154ea1304a17bac3a4e6ee5af8264da5cf48a81c
+OK package-lock.json bytes=262144 sha=f8215eaf8621ec986d1eb3ac66daee8eab660db4 TRUNCATED
+OK src/components/ui/input.tsx bytes=1030 sha=7c4ab5ab5ed4872687e2c7e41eac38d50c9e7bf5
+OK src/components/ui/sheet.tsx bytes=4425 sha=754143411b0279d582884619a7317fa632db1453
+OK package.json bytes=1147 sha=d04fe6f64e93fb1c026f1ea483d6e3254da0d455
+
+FAILED/SKIPPED:
+docs/screenshots/mobile-strategy.png: truncated from origin
+docs/screenshots/desktop.png: truncated from origin
+docs/screenshots/desktop-strategy.png: truncated from origin
+docs/screenshots/mobile.png: truncated from origin
+package-lock.json: truncated from origin
