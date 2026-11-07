@@ -27,6 +27,7 @@ describe("flow-first station", () => {
     expect(screen.queryByLabelText(/密码|凭证|登录/)).not.toBeInTheDocument();
   });
   it("plays, pauses without advancing, steps one event, changes speed and fully resets", async () => {
+    const confirm = vi.spyOn(window, "confirm");
     vi.useFakeTimers();
     render(<StationApp />);
     fireEvent.click(screen.getByRole("button", { name: "一键跑通" }));
@@ -49,6 +50,63 @@ describe("flow-first station", () => {
     expect(screen.getByRole("log")).toHaveTextContent("尚无事件");
     expect(screen.getByTestId("current-node")).toHaveTextContent("出海准入");
     expect(screen.getByRole("button", { name: "一键跑通" })).toBeEnabled();
+    await act(async () => { vi.advanceTimersByTime(8000); });
+    expect(JSON.parse(localStorage.getItem(SIM_STORAGE_KEY)!).engine).toEqual(createEngine());
+    expect(screen.getByTestId("tick")).toHaveTextContent("T00");
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it.each(["click", "Enter", "Space"] as const)("fully resets an approval with samples using %s, without native confirmation", async trigger => {
+    let engine = decideEngine(gate("anomaly"), "approve");
+    while (!engine.decision) engine = stepEngine(engine);
+    stored({ ...engine, speed: 4 });
+    const confirm = vi.spyOn(window, "confirm");
+    const user = userEvent.setup();
+    render(<StationApp />);
+    expect(screen.getByTestId("spend")).not.toHaveTextContent("USD 0.00");
+    expect(screen.getByRole("region", { name: "用户审批决策" })).toBeVisible();
+    const reset = screen.getByRole("button", { name: "重置" });
+    expect(reset).toBeEnabled();
+    expect(reset).toHaveAttribute("type", "button");
+    expect(reset).not.toHaveAttribute("aria-disabled", "true");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    if (trigger === "click") await user.click(reset);
+    else {
+      reset.focus();
+      await user.keyboard(trigger === "Enter" ? "{Enter}" : " ");
+    }
+    // Compare the entire persisted engine: pending queue, RNG, nodes, decision,
+    // history, completion, samples/metrics, artifacts, transition and speed.
+    expect(JSON.parse(localStorage.getItem(SIM_STORAGE_KEY)!).engine).toEqual(createEngine(engine.scenario, engine.seed));
+    expect(screen.getByTestId("tick")).toHaveTextContent("T00");
+    expect(screen.getByTestId("current-node")).toHaveTextContent("出海准入");
+    expect(screen.getByTestId("spend")).toHaveTextContent("USD 0.00");
+    expect(screen.getByLabelText("速度")).toHaveValue("1");
+    expect(screen.getByLabelText("演示场景")).toHaveValue("anomaly");
+    expect(screen.getByRole("log")).toHaveTextContent("尚无事件");
+    expect(screen.getByRole("region", { name: "闭环交付物" })).toHaveTextContent("暂无交付物");
+    expect(screen.queryByRole("region", { name: "用户审批决策" })).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("本场景已完整重置");
+    expect(screen.getByRole("button", { name: "一键跑通" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "单步" })).toBeEnabled();
+    expect(reset).toHaveFocus();
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("keeps the mobile playback grid separate from scene, speed and tick controls", () => {
+    render(<StationApp />);
+    const controls = screen.getByRole("region", { name: "模拟控件" });
+    expect(controls).toHaveClass("sim-console");
+    const playback = screen.getByRole("button", { name: "重置" }).parentElement!;
+    expect(playback).toHaveClass("playback-controls");
+    expect(within(playback).getAllByRole("button").map(button => button.textContent)).toEqual(["一键跑通", "单步", "重置"]);
+    for (const child of [playback, screen.getByLabelText("演示场景").parentElement, screen.getByLabelText("速度").parentElement, screen.getByTestId("tick").parentElement]) {
+      expect(child?.parentElement).toBe(controls);
+    }
+    const brand = screen.getByRole("link", { name: /出海实验站/ });
+    expect(brand).toHaveClass("sim-brand");
+    expect(brand.parentElement).toHaveClass("sim-header");
+    expect(brand.children[1]).toHaveTextContent("出海实验站");
   });
 
   it("runs a complete loop from one launch, stops for user approval, and delivers knowledge before strategy return", async () => {
