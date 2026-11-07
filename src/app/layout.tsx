@@ -24,7 +24,7 @@ const display = localFont({
 export const metadata: Metadata = {
   title: "出海实验站",
   description:
-    "短剧出海商业化试点的本地草稿台。名册可见，运行时未连接；不派发 Bot，不执行投放。",
+    "短剧海外实验业务流程模拟：准入、策略、用户审批、监控、对账、反馈与下一轮策略。模拟数据，未连接真实业务。",
 };
 
 export default function RootLayout({
