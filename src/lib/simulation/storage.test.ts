@@ -11,6 +11,28 @@ function progress(scenario: "normal" | "rework" | "anomaly", finish = false): En
   return state;
 }
 describe("complete versioned simulation persistence", () => {
+  it.each(["normal", "rework", "anomaly"] as const)("restores every intermediate %s tick as one consistent snapshot, including gates and rework", scenario => {
+    let engine = createEngine(scenario);
+    let returnedOnce = false;
+    const memory = store();
+    for (let safety = 0; safety < 100; safety++) {
+      const running = setPlaying(engine, true);
+      saveSession(memory, { engine: running, view: "flow", guide: false });
+      const restored = loadSession(memory).session.engine;
+      expect(restored).toEqual({ ...running, playing: false });
+      expect(restored.current).toBe(engine.current);
+      expect(restored.artifacts).toEqual(engine.artifacts);
+      expect(restored.nodes).toEqual(engine.nodes);
+      expect(restored.logs).toEqual(engine.logs);
+      expect(restored.pending).toEqual(engine.pending);
+      if (engine.completed) break;
+      if (engine.decision === "launch" && !returnedOnce) {
+        engine = decideEngine(restored, "revise");
+        returnedOnce = true;
+      } else engine = engine.decision ? decideEngine(restored, "approve") : stepEngine(restored);
+    }
+    expect(engine.completed).toBe(true);
+  });
   it.each(["normal", "rework", "anomaly"] as const)("round-trips every %s state field and always resumes paused", scenario => {
     for (const finish of [false, true]) {
       const engine = setSpeed(setPlaying(progress(scenario, finish), true), 4);

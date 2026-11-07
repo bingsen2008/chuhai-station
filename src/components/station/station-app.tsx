@@ -5,11 +5,13 @@ import { ArrowRight, BookOpen, Boxes, CircleHelp, Gauge, Layers3, Pause, Play, R
 import { FlowMap, StatusBadge } from "./flow-map";
 import { Tower } from "./tower";
 import { DraftWorkspace } from "./draft-workspace";
+import { SimulationDialog } from "./simulation-dialog";
+import { NodeMetrics } from "./node-metrics";
 import { FLOORS, SEATS } from "@/lib/catalog";
 import { botById } from "@/lib/roster";
 import { FLOOR_IDS, type FloorId } from "@/lib/types";
 import {
-  decideEngine, EXAMPLE_BUDGET_CENTS, NODES, nextAction, resetEngine, roi,
+  decideEngine, NODES, nextAction, resetEngine,
   SCENARIOS, STATUS, setPlaying, setSpeed, SPEEDS, stepEngine, tickEngine, type EngineState, type NodeStatus, type Scenario, type Speed,
 } from "@/lib/simulation/engine";
 import { freshSession, loadSession, saveSession, type Session } from "@/lib/simulation/storage";
@@ -23,6 +25,7 @@ export function StationApp() {
   const [notice, setNotice] = useState("");
   const [saveError, setSaveError] = useState(false);
   const [draftOpen, setDraftOpen] = useState(false);
+  const [approvalOpen, setApprovalOpen] = useState(false);
   const decisionButton = useRef<HTMLButtonElement>(null);
   const playButton = useRef<HTMLButtonElement>(null);
   const eventLog = useRef<HTMLDivElement>(null);
@@ -51,7 +54,7 @@ export function StationApp() {
   }, [ready, state.playing, state.speed]);
 
   useEffect(() => {
-    if (state.decision) decisionButton.current?.focus({ preventScroll: true });
+    if (state.decision && !document.querySelector('[role="dialog"]')) decisionButton.current?.focus({ preventScroll: true });
   }, [state.decision]);
 
   useEffect(() => {
@@ -59,6 +62,7 @@ export function StationApp() {
   }, [state.logs.length]);
 
   function decide(command: "approve" | "revise" | "stop") {
+    setApprovalOpen(false);
     update(previous => {
       const next = decideEngine(previous, command);
       return setPlaying(next, true);
@@ -78,8 +82,14 @@ export function StationApp() {
     </header>
     <main className="sim-main">
       <section className="sim-intro" aria-labelledby="sim-title">
-        <div><p className="sim-kicker">短剧海外实验 · 业务流转演示</p><h1 id="sim-title">看见每一次<span>业务交接。</span></h1><p className="intro-copy">一个案件，从成片准入到下一轮策略。跟随任务包，看看谁接手、交付了什么，以及接下来发生什么。</p></div>
+        <div><p className="sim-kicker">短剧海外实验 · 业务流转演示</p><h1 id="sim-title">方向向下，<span>证据向上。</span></h1><p className="intro-copy">卢哥定方向，靓仔总控，业务 Agent 并列协作。沿着一份案件，追踪每一次交付与人工决策。</p></div>
         <div className="case-stamp"><span className="case-icon"><Boxes size={25} /></span><div><small>本次演示案件 / SIM-001</small><strong>《潮声》短剧海外实验</strong><span>示例单市场 · 示例单渠道 · USD 预算</span></div></div>
+      </section>
+
+      <section className="sim-now" aria-label="当前节点与下一步">
+        <div className="current-node"><span className="now-label">当前节点</span><strong data-testid="current-node">{NODES[state.current].name}</strong><StatusBadge status={state.nodes[state.current]} /></div>
+        <ArrowRight className="now-arrow" size={20} aria-hidden="true" /><div className="next-action"><span className="now-label">下一步</span><span data-testid="next-action">{nextAction(state)}</span></div>
+        <div className="now-live"><span>下一交付物<b data-testid="next-deliverable">{state.completed ? "本轮交付完成" : NODES[state.current].output}</b></span><button className="approval-pill" onClick={() => setApprovalOpen(true)}>待审批 {state.decision ? 1 : 0} 件</button></div>
       </section>
 
       <section className={`sim-guide ${guide ? "" : "guide-closed"}`} aria-label="首次使用引导">
@@ -102,32 +112,23 @@ export function StationApp() {
       <p className="scenario-description">{SCENARIOS[state.scenario].description} <span>切换场景会复位；单步每次推进一个事件。</span></p>
       {(notice || saveError) && <p className="storage-notice" role="status">{saveError ? "演示未能保存。当前可继续操作，刷新后可能复位。" : notice}</p>}
 
-      <section className="sim-now" aria-label="当前节点与下一步">
-        <div className="current-node"><span className="now-label">当前节点</span><strong data-testid="current-node">{NODES[state.current].name}</strong><StatusBadge status={state.nodes[state.current]} /></div>
-        <ArrowRight className="now-arrow" size={20} aria-hidden="true" /><div className="next-action"><span className="now-label">下一步</span><span data-testid="next-action">{nextAction(state)}</span></div>
-        <div className="now-live" aria-label="当前累计模拟指标"><span>模拟值 · 累计花费<b>{usd(state.metrics.spendCents)}</b></span><span>模拟值 · 累计曝光<b>{number(state.metrics.impressions)} 次</b></span></div>
-      </section>
       {state.decision && <section className="sim-decision" aria-label="用户审批决策">
         <div><span className="decision-mark" aria-hidden="true">◇</span><div><h2>{state.decision === "launch" ? "这一步，由你决定" : "异常已升级，请你决策"}</h2><p>{state.decision === "launch" ? "阅读策略交付物：示例预算 USD 500，四批样本，异常升级。批准仅继续本地模拟。" : "第二批花费 USD 160 超出示例阈值 USD 120 / 批。靓仔已整理证据，你可以继续观察或用已有样本对账。"}</p></div></div>
         <div className="decision-actions"><button ref={decisionButton} className="sim-button primary" onClick={() => decide("approve")}>{state.decision === "launch" ? "批准模拟并继续" : "继续受控观察"}<ArrowRight size={16} /></button><button className="sim-button" onClick={() => decide(state.decision === "launch" ? "revise" : "stop")}>{state.decision === "launch" ? "退回修改策略" : "结束观察并对账"}</button></div>
       </section>}
 
       <section className="flow-section" aria-label="业务流程演示">
-        <div className="section-title"><div><p className="sim-kicker">FOLLOW THE CASE</p><h2>一条清晰的业务闭环</h2></div><div className="view-switch" role="group" aria-label="视图切换"><button aria-pressed={view === "flow"} onClick={() => setSession(previous => ({ ...previous, view: "flow" }))}><Workflow size={16} />业务流程</button><button aria-pressed={view === "tower"} onClick={() => setSession(previous => ({ ...previous, view: "tower" }))}><Layers3 size={16} />五层楼宇</button></div></div>
-        <div className="flow-legend" aria-label="节点状态图例">{(["waiting", "running", "passed", "rework", "escalated"] as const).map(status => <StatusBadge key={status} status={status} />)}<span>实线：主流程 · 虚线：闭环回流</span></div>
+        <div className="section-title"><div><p className="sim-kicker">FOLLOW THE CASE</p><h2>协作网络 / 运行现场</h2></div><div className="view-switch" role="group" aria-label="视图切换"><button aria-pressed={view === "flow"} onClick={() => setSession(previous => ({ ...previous, view: "flow" }))}><Workflow size={16} />业务流程</button><button aria-pressed={view === "tower"} onClick={() => setSession(previous => ({ ...previous, view: "tower" }))}><Layers3 size={16} />五层楼宇</button></div></div>
+        <div className="flow-legend" aria-label="节点状态图例">{(["waiting", "running", "passed", "rework", "escalated"] as const).map(status => <StatusBadge key={status} status={status} />)}<span>组织指令与汇报分色 · 业务顺序见下方主业务链</span></div>
         <div className="handoff-strip" aria-live="off"><span className="handoff-symbol" aria-hidden="true">▣</span><b>案件任务包</b><span>{state.transition ? `${NODES[state.transition.from].name} → ${NODES[state.transition.to].name} · ${state.transition.label}` : state.tick === 0 ? "SIM-001 已就绪，等待进入准入检查" : `SIM-001 · ${NODES[state.current].name} · ${state.logs.at(-1)?.message ?? "等待下一事件"}`}</span></div>
-        {view === "flow" ? <FlowMap state={state} /> : <TowerView state={state} />}
+        {view === "flow" ? <FlowMap state={state} onApproval={() => setApprovalOpen(true)} /> : <TowerView state={state} />}
       </section>
 
-      <section className="metrics-section" aria-labelledby="metrics-title"><div className="section-title"><div><p className="sim-kicker">EVENT-DRIVEN METRICS</p><h2 id="metrics-title">数字有来处，变化有记录</h2></div><span className="section-note">只在样本事件发生时累加</span></div>
-        <div className="metric-grid">
-          <Metric label="示例预算" value={usd(EXAMPLE_BUDGET_CENTS)} note="模拟值 · USD 上限提议，非真实花费许可" />
-          <Metric label="累计花费" value={usd(state.metrics.spendCents)} note="模拟值 · USD，累计样本成本" testId="spend" />
-          <Metric label="累计曝光 / 点击" value={`${number(state.metrics.impressions)} / ${number(state.metrics.clicks)}`} note="模拟值 · 次，按批事件累计" testId="impressions" />
-          <Metric label="归因毛收入" value={usd(state.metrics.revenueCents)} note="模拟值 · USD，同实验窗口，非净现金" />
-          <Metric label="模拟 ROI" value={roi(state.metrics) === null ? "—" : `${(roi(state.metrics)! * 100).toFixed(1)}%`} note="模拟值 · (归因毛收入 − 花费) / 花费" />
-        </div><p className="metric-footnote">零花费时 ROI 未定义。未计平台分成、税费与退款；这些示例不构成真实效果承诺。</p>
-      </section>
+      <p className="metric-footnote">卡片内指标可点击钻取。均为示例：金额以 USD 展示、按整数美分累计；曝光与点击按次计。ROI =（同窗口归因毛收入 − 花费）/ 花费，零花费时未定义；未计平台分成、税费与退款。</p>
+      {view === "tower" && <div className="tower-live-metrics"><h3>当前模拟指标 · 点击钻取</h3><NodeMetrics id="monitor" state={state} /><NodeMetrics id="accounting" state={state} /></div>}
+      {approvalOpen && <SimulationDialog title="卢哥 · 本地模拟审批" onClose={() => setApprovalOpen(false)}>
+        {state.decision ? <><p className="drill-note">{state.decision === "launch" ? "策略提议已提交。审批前不会生成投放样本，批准只继续本地模拟。" : "异常已升级。等待人工选择，后续样本已冻结。"}</p><article className="approval-evidence"><h3>待审交付物</h3><p>{state.decision === "launch" ? state.artifacts.strategy : state.artifacts.coordinator}</p><p>{state.artifacts.monitor}</p></article><div className="decision-actions"><button className="sim-button primary" onClick={() => decide("approve")}>通过并继续模拟</button><button className="sim-button" onClick={() => decide(state.decision === "launch" ? "revise" : "stop")}>{state.decision === "launch" ? "退回返工" : "结束观察并对账"}</button></div></> : <p className="drill-note">当前没有待审批事项。审批到达前不会预先授权；可关闭后继续演示。</p>}
+      </SimulationDialog>}
       <div className="evidence-grid">
         <section className="event-panel" aria-labelledby="events-title"><div className="panel-title"><h2 id="events-title">事件日志</h2><span>{state.logs.length} 条 · 离散 Tick</span></div><p className="panel-caption">与节点、路径和指标共用同一份事件状态。</p>
           <div ref={eventLog} className="event-log" onScroll={event => { const log = event.currentTarget; followLog.current = log.scrollHeight - log.scrollTop - log.clientHeight < 40; }} role="log" aria-label="模拟事件日志" aria-live="polite" aria-relevant="additions" tabIndex={0}>
@@ -142,9 +143,6 @@ export function StationApp() {
   </div>;
 }
 function STATUS_LABEL(status: NodeStatus) { return `${STATUS[status].icon} ${STATUS[status].label}`; }
-function Metric({ label, value, note, testId }: { label: string; value: string; note: string; testId?: string }) {
-  return <article className="metric-card"><h3>{label}</h3><strong data-testid={testId}>{value}</strong><p>{note}</p></article>;
-}
 const floorFor: Record<EngineState["current"], FloorId> = { admission: "admission", rework: "admission", strategy: "strategy", expert: "strategy", approval: "analysis", monitor: "strategy", coordinator: "analysis", accounting: "reconciliation", feedback: "feedback", next: "feedback" };
 function TowerView({ state }: { state: EngineState }) {
   const [selected, setSelected] = useState<FloorId | null>(null);
