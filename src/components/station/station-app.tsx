@@ -48,6 +48,7 @@ import {
   SpecialistPanel,
   type FloorAction,
 } from "@/components/station/panels";
+import { Onboarding } from "@/components/station/onboarding";
 import { Tower } from "@/components/station/tower";
 
 const actionClass = "h-11 px-3";
@@ -69,7 +70,7 @@ export function StationApp() {
     <TooltipProvider>
       <DraftProvider>
         <Station />
-        <Toaster position="top-center" />
+        <Toaster position="bottom-center" duration={2500} visibleToasts={1} />
       </DraftProvider>
     </TooltipProvider>
   );
@@ -145,6 +146,7 @@ function Station() {
     setFloorId(id);
     setSeatId(null);
     setLive(`聚焦 ${FLOORS[id].number} ${FLOORS[id].name}`);
+    toast(`已选择 ${FLOORS[id].number} ${FLOORS[id].name}，职责与操作见楼层详情`);
   }
 
   function chooseSeat(id: string) {
@@ -152,13 +154,14 @@ function Station() {
     if (seatFloor) setFloorId(seatFloor);
     setSeatId(id);
     setLive(`打开席位 ${id}`);
+    toast("已打开专业席位详情；Bot 运行时未接入");
     if (window.matchMedia("(max-width: 1023px)").matches) {
       document.getElementById("context-panel")?.scrollIntoView({ block: "start" });
     }
   }
 
   function openSheet(next: SheetView) {
-    if (editingLocked) return;
+    if (editingLocked && next.type !== "roster") { toast("草稿暂不可编辑，请先处理上方存储提示"); return; }
     setSheet(next);
   }
 
@@ -180,7 +183,8 @@ function Station() {
       setImportIssues([`文件超过 ${LIMITS.importBytes / 1000}KB 上限，没有导入。`]);
       return;
     }
-    const text = await readFileText(file);
+    let text: string;
+    try { text = await readFileText(file); } catch { setImportIssues(["文件读取失败，请重新选择 JSON 文件。"]); return; }
     const parsed = parseDraftText(text);
     if (!parsed.ok) {
       setImportIssues(parsed.issues);
@@ -204,7 +208,7 @@ function Station() {
     toast("已导出本地草稿。文件里没有花费执行记录。");
   }
 
-  const floorList = [...FLOOR_IDS].reverse();
+  const floorList = [...FLOOR_IDS];
 
   return (
     <div className="station-shell min-h-screen">
@@ -268,9 +272,11 @@ function Station() {
         </div>
       ) : null}
 
+      <Onboarding floorId={floorId} onFloor={chooseFloor} onConfigure={() => openSheet({ type: "pilot" })} />
+
       <div className="mx-auto grid max-w-[1440px] gap-4 px-3 py-4 lg:grid-cols-[280px_minmax(0,1fr)_340px] lg:px-5">
         <div className="grid content-start gap-3">
-          <nav aria-label="楼层" className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+          <nav aria-label="楼层" className="grid grid-cols-2 gap-2 pb-1 lg:flex lg:flex-col">
             <button
               type="button"
               aria-pressed={floorId === null}
@@ -301,7 +307,7 @@ function Station() {
                   <span className="font-heading text-lg">{floor.number}</span>
                   <span>
                     <span className="block text-sm font-medium">{floor.name}</span>
-                    <span className="block text-xs opacity-80">{seatsOn(id).length} 个席位</span>
+                    <span className="block text-xs opacity-80">第 {floor.index + 1} 步 · {seatsOn(id).length} 个席位</span>
                   </span>
                 </button>
               );
@@ -533,7 +539,7 @@ function sheetBody(sheet: SheetView | null) {
 
 function floorChip(selected: boolean): string {
   return [
-    "flex min-h-11 min-w-[168px] shrink-0 items-center gap-3 rounded-2xl border px-3 py-2 text-left lg:w-full lg:min-w-0",
+    "flex min-h-11 min-w-0 shrink-0 items-center gap-3 rounded-2xl border px-3 py-2 text-left lg:w-full lg:min-w-0",
     selected
       ? "border-[#1d4e55] bg-[#1d4e55] text-[#f6f1e6]"
       : "border-[#d9d0c0] bg-[#fbf7ef] text-[#1c2a30]",
